@@ -1,2 +1,8 @@
+*.ttc
+*.ttm
 *.ibc
 *.o
+*.log
+*.aux
+*.pdf
+*~
