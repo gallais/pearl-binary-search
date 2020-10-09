@@ -1,0 +1,48 @@
+\documentclass{article}
+
+\usepackage{xcolor}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+
+%%% Coloring the comment as blue
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+\SetCommentSty{mycommfont}
+
+\begin{document}
+
+\begin{algorithm}[H]
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}              % set the Output
+\DontPrintSemicolon
+
+  \KwInput{Needle and array}
+  \KwOutput{Is the needle in the array?}
+
+% Set Function Names
+  \SetKwFunction{FSearch}{Search}
+% Write Function with word ``Function''
+  \SetKwProg{Fn}{Procedure}{:}{}
+  \Fn{\FSearch{needle, array}}{
+
+        found := false\;
+        begin := 0\;
+        end   := \texttt{size}(array)\;
+
+        \;
+        \While{\texttt{not}(found) \&\& begin < end}
+          {\;
+          middle    := begin + (end - begin) / 2\;
+          candidate := array[middle]\;\;
+
+         \If{candidate = needle} {found := true}
+         \ElseIf{needle < candidate}{end := middle}
+         \Else{begin := middle + 1}\;
+        }
+         \KwRet{found}\;
+  }
+\caption{Binary search in a sorted array}
+\end{algorithm}
+
+\end{document}
