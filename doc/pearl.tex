@@ -1,0 +1,34 @@
+\documentclass{article}
+
+\usepackage{catchfilebetweentags}
+\input{robust-catch}
+
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+
+\title{Certified Binary Search in a Read-Only Array}
+\author{Guillaume ALLAIS}
+
+\begin{document}
+\maketitle
+\begin{figure}
+  \center
+  \ExecuteMetaData[tree.tex]{search11}
+  \caption{Tracing the binary search for 11}
+\end{figure}
+
+\begin{figure}
+  \center
+  \ExecuteMetaData[tree.tex]{search31}
+  \caption{Tracing the binary search for 31}
+\end{figure}
+
+\begin{figure}
+  \center
+  \ExecuteMetaData[tree.tex]{searchall}
+  \caption{Tracing all possible binary searches}
+\end{figure}
+
+
+\end{document}
