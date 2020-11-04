@@ -1,17 +1,50 @@
 \documentclass{article}
 
+\usepackage{todonotes}
+
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+
+% grab parts of other files
 \usepackage{catchfilebetweentags}
 \input{robust-catch}
 
+% tree diagrams
 \usepackage{tikz}
 \usetikzlibrary{matrix}
 
+% algorithm
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+
+
+\usepackage{cleveref}
 
 \title{Certified Binary Search in a Read-Only Array}
 \author{Guillaume ALLAIS}
 
 \begin{document}
 \maketitle
+
+\begin{abstract}
+  Reifying the control flow of imperative programs as data structures allows
+  functional programmers to implement common algorithms by an obviously
+  terminating structural recursion. Additionally, this inductive structure
+  can be decorated with invariants allowing the procedure to be proven correct.
+
+  This ease of definition and certification comes at a cost because the
+  functional data structure is typically not stored as efficiently in
+  memory as the imperative counterpart it replaces.
+
+  In this paper we use quantitative type theory as implemented in Idris 2 to
+  combine an efficient runtime representation of the data with a convenient
+  compile time inductive view of it to use for ease of definition and
+  certification.
+\end{abstract}
+
+\section{Introduction}
+
+\subsection{Binary search, by example}
+
 \begin{figure}
   \center
   \ExecuteMetaData[tree.tex]{search11}
@@ -24,11 +57,45 @@
   \caption{Tracing the binary search for 31}
 \end{figure}
 
+\subsection{Binary search, imperatively}
+
+\input{algo}
+
+\subsection{The computation's underlying structure}
+
+Using data as a source of control flow is a classic design pattern in functional
+programming. It not only serves as a replacement for imperative constructs, it
+provides the user with a more general abstraction. This is perhaps best exemplified
+by the common practice of \emph{traversing}\todo{cite}
+lists instead of using a \texttt{for}-loops. Any list-producing process (a function,
+a system call, etc.) can now become a source of control flow.
+
+Coming back to our running example, if we take the time to trace all the possible
+execution paths of binary search on our read only array we see a tree revealed
+(cf. \cref{fig:searchall}).
+This is the underlying structure of the binary search computation: a binary search
+tree! \todo{Be precise: AVL?}
+
 \begin{figure}
   \center
   \ExecuteMetaData[tree.tex]{searchall}
   \caption{Tracing all possible binary searches}
+  \label{fig:searchall}
 \end{figure}
+
+This suggests a straightforward avenue for formalisation: ditch the array and
+use the underlying binary search tree instead. This has the added benefit of
+replacing an induction over the size of the subarray the search is performed on
+into a purely structural one on the tree.
+
+However this would have adverse consequences in terms of performance: instead of
+a compact representation using a contiguous array, we would have a tree whose nodes
+comprise of a value and two pointers to its children.
+
+Can we have the best of both worlds? A compact runtime representation using an
+array and an obviously terminating recursive function amenable to verification.
+
+\section{}
 
 
 \end{document}
