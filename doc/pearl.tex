@@ -2,6 +2,9 @@
 
 \usepackage{todonotes}
 
+\usepackage[authoryear]{natbib}
+\bibliographystyle{apalike}
+
 \usepackage[T1]{fontenc}
 \usepackage[latin1]{inputenc}
 
@@ -42,6 +45,30 @@
 \end{abstract}
 
 \section{Introduction}
+
+In their work on LoCal, a functional language whose types carry information
+about the runtime data-layout of the recursive structures being traversed,
+\citet{DBLP:conf/pldi/VollmerKRS0N19} warn against the explicit manipulation
+of pointers.
+%
+This justifies their approach: adding built-in compiler support for turning
+user-written recursive functions over inductive data types into traversals
+operating directly on the serialised data.
+
+\begin{quote}
+  Cursors need to be manipulated carefully to visit the necessary portions
+  of the buffer skipping over the sections that are not needed and read out
+  the appropriate data, all without the safety net of a type checker. Hence,
+  writing code to work directly on the serialized data can be tedious and
+  error-prone.
+\end{quote}
+
+From the point of view of the dependently typed programmer, this special built-in
+support is redundant. In the same way that data-generic programming is usual
+programming over a closed universe of descriptions of data
+types~\citep{DBLP:conf/ifip2-1/AltenkirchM02},
+programming over serialised data is usual programming over data that is aware
+of its serialisation format.
 
 \subsection{Binary search, by example}
 
@@ -97,5 +124,7 @@ array and an obviously terminating recursive function amenable to verification.
 
 \section{}
 
+
+\bibliography{pearl}
 
 \end{document}
