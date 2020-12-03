@@ -46,14 +46,44 @@
 
 \section{Introduction}
 
-In their work on LoCal, a functional language whose types carry information
-about the runtime data-layout of the recursive structures being traversed,
-\citet{DBLP:conf/pldi/VollmerKRS0N19} warn against the explicit manipulation
-of pointers.
+One of the strengths of functional programming is the ability to reify common
+control flow structures as inductive types and replace the corresponding ad-hoc
+iteration constructs by recursive functions consuming these inductively defined
+values.
+
+This is best exemplified by the \texttt{forM} construct which provides users with
+a convenient replacement for a \texttt{for} loop iterating over a range of values.
+Instead of writing \texttt{for(i = 0; i <= 10; i=i+2) body} to execute \texttt{body}
+with \texttt{i} taking the successive values $0$, $2$, etc. up to $10$, the user
+can first write \texttt{[0,2..10]} to generate a list corresponding to the range
+of interest and then iterate over it with \texttt{forM} thus getting the equivalent
+program: \texttt{forM [0,2..10] \$ \textbackslash i -> body}.
+
+Replacing equals for equals is of course not the most exciting. A first comparative
+advantage of the functional approach is the fact that any function or system call
+producing a list of values (not just integers!) can now become a source of control
+flow.
 %
-This justifies their approach: adding built-in compiler support for turning
-user-written recursive functions over inductive data types into traversals
-operating directly on the serialised data.
+The second and perhaps more important one comes from the fact that these constructs
+can then be extended to work with a whole \emph{class} of inductive types thus
+generalising the original iteration principle. In Haskell's standard library,
+\texttt{forM} will for instance work over not just lists but more generally
+any \texttt{Traversable} type~\citep{DBLP:journals/jfp/McbrideP08},
+that is to say any finitely branching tree-like structure.
+
+This generalisation can unfortunately come at a cost. If Haskell's optimiser is
+good enough to generate tight loops for programs similar to the one above, it
+will not be able to avoid the extra allocations and pointer chasing introduced by
+the use of an inductive data type in all cases. We will consider one such case in
+\cref{example:search}.
+
+The work on LoCal, a functional language whose types carry information about the
+runtime data-layout of the recursive structures being traversed, attempts to solve
+that problem. The careful typing rules ensure the user-written programs manipulating
+inductive data can be run directly on its serialised form.
+%
+In it, \citet{DBLP:conf/pldi/VollmerKRS0N19} warn against the explicit manipulation
+of pointers. This justifies their approach: adding built-in compiler support.
 
 \begin{quote}
   Cursors need to be manipulated carefully to visit the necessary portions
@@ -63,14 +93,19 @@ operating directly on the serialised data.
   error-prone.
 \end{quote}
 
-From the point of view of the dependently typed programmer, this special built-in
-support is redundant. In the same way that data-generic programming is usual
-programming over a closed universe of descriptions of data
-types~\citep{DBLP:conf/ifip2-1/AltenkirchM02},
+As we are going to see in this paper, from the point of view of the dependently
+typed programmer this special built-in support is redundant.
+%
+In the same way that data-generic programming is usual programming over a closed
+universe of descriptions of data types~\citep{DBLP:conf/ifip2-1/AltenkirchM02},
 programming over serialised data is usual programming over data that is aware
 of its serialisation format.
 
-\subsection{Binary search, by example}
+\section{Search by dichotomy}
+
+
+\subsection{Search, by example}
+\label{example:search}
 
 \begin{figure}
   \center
@@ -84,18 +119,12 @@ of its serialisation format.
   \caption{Tracing the binary search for 31}
 \end{figure}
 
-\subsection{Binary search, imperatively}
+\subsection{Search, imperatively}
 
 \input{algo}
 
 \subsection{The computation's underlying structure}
 
-Using data as a source of control flow is a classic design pattern in functional
-programming. It not only serves as a replacement for imperative constructs, it
-provides the user with a more general abstraction. This is perhaps best exemplified
-by the common practice of \emph{traversing}\todo{cite}
-lists instead of using a \texttt{for}-loops. Any list-producing process (a function,
-a system call, etc.) can now become a source of control flow.
 
 Coming back to our running example, if we take the time to trace all the possible
 execution paths of binary search on our read only array we see a tree revealed
