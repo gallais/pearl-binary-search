@@ -38,7 +38,7 @@
   functional data structure is typically not stored as efficiently in
   memory as the imperative counterpart it replaces.
 
-  In this paper we use quantitative type theory as implemented in Idris 2 to
+  In this paper we use quantitative type theory as implemented in Idris2 to
   combine an efficient runtime representation of the data with a convenient
   compile time inductive view of it to use for ease of definition and
   certification.
@@ -101,22 +101,87 @@ universe of descriptions of data types~\citep{DBLP:conf/ifip2-1/AltenkirchM02},
 programming over serialised data is usual programming over data that is aware
 of its serialisation format.
 
-\section{Search by dichotomy}
+\subsection{Roadmap}\todo{expand}
 
+In this pearl we will focus on a specific algorithm: binary search in a
+sorted read-only array. This is typically used to efficiently check whether
+a given value belongs to a set.
+
+\paragraph{Section \ref{sec:reconstruct}} is dedicated to rediscovering the
+underlying structure of search by dichotomy. It leads us to the corresponding
+functional abstraction using a binary search tree.
+
+\paragraph{Section \ref{sec:qtt}} is a quick introduction to the quantitative
+type theory underpinning Idris2 and the notion of runtime irrelevance that it
+provides.
+
+\paragraph{Section \ref{sec:treearray}} is the core of our pearl: the
+runtime irrelevant inductive structure that allows us to see a read-only array
+as a tree in disguise. All of the information it carries allows us to prove a
+logarithmic \emph{decidability} principle for array membership.
+
+
+\section{Search by dichotomy}
+\label{sec:reconstruct}
+
+Binary search is a classic example of an algorithm offering an asymptotic
+improvement over a naïve approach, under the assumption that the input data
+is structured.
+
+Provided a set represented as an array that is known to be sorted, it is
+possible to test set membership in logarithmic time instead of taking linear
+time to compare the value of interest to each value in the set.
+
+The key observation underpinning this algorithm is that, by virtue of the array
+being sorted, the value in the middle of any subarray divides it in two parts:
+the left one, only containing strictly smaller values,
+and the right one, only containing strictly larger ones.
+%
+Using this knowledge, at each step of the procedure we can eliminate half of
+the remaining candidates. Comparing the value in the middle of the subarray
+we are focused on with our value of interest, we can
+either stop if we have successfully found our target
+or focus on the left or the right half of the subarray depending on whether
+our target is smaller of larger than the value we just read.
+
+Let us look at a couple of examples.
 
 \subsection{Search, by example}
 \label{example:search}
 
-\begin{figure}
+In figure~\ref{fig:searchsuccess} we are looking for
+the value 11 in a sorted array.
+%
+We start by reading the value in the middle of the whole array, find out it is
+13 which is larger than 11 and thus focus on the left half of the array for the
+next step.
+%
+We then read the value in the middle of the left half of the array, obtain 5
+which is smaller than 11 and thus shift our focus to the right of 5, that is
+to say on the second quarter of the whole array.
+%
+After reading 7, we shift once more our focus to the right and finally manage
+to find our target. The search for 11 was successful.
+
+\begin{figure}[h]
   \center
   \ExecuteMetaData[tree.tex]{search11}
   \caption{Tracing the binary search for 11}
+  \label{fig:searchsuccess}
 \end{figure}
 
-\begin{figure}
+If we had been looking for the value 31 instead, we would have obtained the
+unsuccessful trace shown in figure~\ref{fig:searchfail}. We start from the
+middle of the array and repeatedly shift our focus to the right because we
+keep reading numbers smaller than our target. We eventually reach the end of
+the array and can declare that 31 is not a member of the set.
+
+
+\begin{figure}[h]
   \center
   \ExecuteMetaData[tree.tex]{search31}
   \caption{Tracing the binary search for 31}
+  \label{fig:searchfail}
 \end{figure}
 
 \subsection{Search, imperatively}
@@ -132,7 +197,7 @@ execution paths of binary search on our read only array we see a tree revealed
 This is the underlying structure of the binary search computation: a binary search
 tree! \todo{Be precise: AVL?}
 
-\begin{figure}
+\begin{figure}[h]
   \center
   \ExecuteMetaData[tree.tex]{searchall}
   \caption{Tracing all possible binary searches}
@@ -144,15 +209,34 @@ use the underlying binary search tree instead. This has the added benefit of
 replacing an induction over the size of the subarray the search is performed on
 into a purely structural one on the tree.
 
+Additionally, in a dependently typed language we can annotate the tree with
+invariants thus guaranteeing that the values are indeed sorted. This empowers
+us to not only write a search procedure but also prove that it decides the
+set membership problem.
+
 However this would have adverse consequences in terms of performance: instead of
-a compact representation using a contiguous array, we would have a tree whose nodes
-comprise of a value and two pointers to its children.
+a compact representation using a contiguous array, we now have a tree whose
+nodes comprise of a value and two pointers to its children.
 
 Can we have the best of both worlds? A compact runtime representation using an
-array and an obviously terminating recursive function amenable to verification.
+array and an obviously terminating recursive decision procedure?
 
-\section{}
+\todo{Also: polymorphic!}
 
+\section{QTT and Runtime Irrelevance}
+\label{sec:qtt}
+
+\section{A Tree in Disguise}
+\label{sec:treearray}
+
+
+
+\section{Related work}
+
+\paragraph{LoCal}
+
+\todo{Check Bedrock}
+\todo{Check ghosts of departed proofs}
 
 \bibliography{pearl}
 
