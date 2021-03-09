@@ -200,15 +200,21 @@ the array and can declare that 31 is not a member of the set.
 \subsection{The computation's underlying structure}
 
 This listing gives us a formal definition of the algorithm. It should be
-enough to prove it terminating and correct. However it has not shone any
-light on the structure of the computation.
+enough to prove it terminating and correct under the assumption that the
+input array is sorted.
+%
+However it has not shone any light on the structure of the computation.
+If a list of values is the essence of a \texttt{for} loop,
+what is that of a search by dichotomy?
+%
+This can be answered by going back to our running example and taking the
+time to observe the behaviour of binary search tree.
 
-Coming back to our running example, if we take the time to trace all the
-possible execution paths of binary search on our read only array we see a
-tree revealed (cf. \cref{fig:searchall}).
+In figure \ref{fig:searchall} we trace all of the possible execution paths
+and see a tree revealed.
 %
 This is the underlying structure of the binary search computation: a binary
-search tree! Additionally, because the procedure is guaranteed to half the
+search tree! Additionally, because the procedure is guaranteed to halve the
 number of candidates at each step, we know that this binary search tree is
 balanced.\todo{Be precise: AVL?}
 
@@ -219,10 +225,12 @@ balanced.\todo{Be precise: AVL?}
   \label{fig:searchall}
 \end{figure}
 
-This suggests a straightforward avenue for formalisation: ditch the array and
-use the underlying binary search tree instead. This has the added benefit of
-replacing an induction over the size of the subarray the search is performed on
-into a purely structural one on the tree.
+This suggests a straightforward avenue for implementation in a functional
+language or formalisation in a proof assistant: ditch the array and use the
+underlying binary search tree instead!
+%
+This has the added benefit of replacing an unwieldy induction over the size
+of the subarray in focus in favour of a purely structural one on the tree.
 
 Additionally, in a dependently typed language we can annotate the tree with
 invariants thus guaranteeing that the values are indeed sorted. This empowers
@@ -235,11 +243,15 @@ nodes comprise of a value and two pointers to its children.
 
 Can we have the best of both worlds? A compact runtime representation using an
 array and an obviously terminating recursive decision procedure?
+%
+We will decidedly answer yes in section~\ref{sec:treearray} thanks to the tools
+we are going to introduce now.
 
-\todo{Also: polymorphic!}
 
 \section{QTT and Runtime Irrelevance}
 \label{sec:qtt}
+
+
 
 \section{A Tree in Disguise}
 \label{sec:treearray}
