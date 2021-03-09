@@ -19,6 +19,12 @@
 % algorithm
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 
+%haskell
+\usepackage{minted}
+
+% parens around citeyear
+\newcommand{\parenciteyear}[1]{(\citeyear{#1})}
+
 
 \usepackage{cleveref}
 
@@ -251,6 +257,58 @@ we are going to introduce now.
 \section{QTT and Runtime Irrelevance}
 \label{sec:qtt}
 
+\subsection{Example: a Safe Open Union Type}
+
+In their work on extensible
+effects~\parenciteyear{DBLP:conf/haskell/KiselyovI15}
+Kiselyov and Ishii use an open union type to efficiently represent the
+available choice of effects in a given computation.
+
+Internally this open union type is a Generalised Algebraic Data Type
+(GADT\todo{cite something?}) parameterised by a list $ts$ of the types
+in the union.
+%
+This GADT has exactly one constructor that stores an \texttt{Int} --meant to be
+understood as the index of the type of interest in $ts$-- together with a value
+of an arbitrary type.
+%
+A simplified\footnote{
+  Unlike Kiselyov   and Ishii's original Haskell code, this version of
+  \texttt{Union} is specialised to types rather than type constructors,
+  and we have stripped annotations concerned with strictness or memory layout.
+  }
+version of the definition is visible in figure \ref{fig:openunion}.
+
+\begin{figure}[h]
+\begin{minted}{Haskell}
+  data Union (ts :: [*]) where
+    Union :: Int -> t -> Union ts
+\end{minted}
+\caption{A Simplified Definition of \texttt{Union}}
+\label{fig:openunion}
+\end{figure}
+
+
+The \texttt{Union} constructor is not exported so that users may only
+manipulate elements of the open union type via the provided functions.
+%
+A library-wide invariant relying on strong assumptions about the host language
+(namely global uniqueness of typeclass instances) guarantees that users of the
+library will only ever be able to manufacture elements of the union where the
+type of the value stored is equal to that pointed at by the \texttt{Int} index.
+%
+This justifies their widespread use of unsafe coercions when unpacking values of
+the union type.
+
+In Idris2 however we can take advantage of dependent types to implement a safe
+version of \texttt{Union} where the invariant between the stored \texttt{Int},
+the type of the value, and the list of types given as a parameter is explicit.
+Additionally, we can take advantage of quantitative type theory to ensure that
+this invariant will be runtime irrelevant thus obtaining a safe, proven correct
+\emph{and} just as efficient version of the library.
+
+
+% Their library provides this open union type as an Abstract Data Type
 
 
 \section{A Tree in Disguise}
