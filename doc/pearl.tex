@@ -51,24 +51,30 @@ control flow structures as inductive types and replace the corresponding ad-hoc
 iteration constructs by recursive functions consuming these inductively defined
 values.
 
-This is best exemplified by the \texttt{forM} construct which provides users with
-a convenient replacement for a \texttt{for} loop iterating over a range of values.
-Instead of writing \texttt{for(i = 0; i <= 10; i=i+2) body} to execute \texttt{body}
-with \texttt{i} taking the successive values $0$, $2$, etc. up to $10$, the user
-can first write \texttt{[0,2..10]} to generate a list corresponding to the range
-of interest and then iterate over it with \texttt{forM} thus getting the equivalent
-program: \texttt{forM [0,2..10] \$ \textbackslash i -> body}.
-
-Replacing equals for equals is of course not the most exciting. A first comparative
-advantage of the functional approach is the fact that any function or system call
-producing a list of values (not just integers!) can now become a source of control
-flow.
+This is perhaps best exemplified by the \texttt{forM} construct which provides
+users with a convenient replacement for a \texttt{for} loop iterating over a
+range of values.
 %
-The second and perhaps more important one comes from the fact that these constructs
-can then be extended to work with a whole \emph{class} of inductive types thus
-generalising the original iteration principle. In Haskell's standard library,
-\texttt{forM} will for instance work over not just lists but more generally
-any \texttt{Traversable} type~\citep{DBLP:journals/jfp/McbrideP08},
+Instead of writing \texttt{for(i = 0; i <= 10; i=i+2) body} to execute
+\texttt{body} with \texttt{i} taking the successive values $0$, $2$, etc. up to
+$10$, the user can first write \texttt{[0,2..10]} to generate a list
+corresponding to the range of interest and then iterate over it with
+\texttt{forM} thus getting the equivalent program
+\texttt{forM [0,2..10] \$ \textbackslash i -> body}.
+
+Replacing equals for equals is of course not the most exciting.
+%
+A first comparative advantage of the functional approach is the fact that any
+function or system call producing a list of values (not just integers!) can now
+become a source of control flow.
+%
+The second and perhaps more important one comes from the fact that these
+constructs can then be extended to work with a whole \emph{class} of inductive
+types thus generalising the original iteration principle.
+%
+In Haskell's standard library, \texttt{forM} will for instance work over not
+just lists but more generally any \texttt{Traversable}
+type~\citep{DBLP:journals/jfp/McbrideP08},
 that is to say any finitely branching tree-like structure.
 
 This generalisation can unfortunately come at a cost. If Haskell's optimiser is
@@ -127,7 +133,7 @@ logarithmic \emph{decidability} principle for array membership.
 Binary search is a classic example of an algorithm offering an asymptotic
 improvement over a naïve approach, under the assumption that the input data
 is structured.
-
+%
 Provided a set represented as an array that is known to be sorted, it is
 possible to test set membership in logarithmic time instead of taking linear
 time to compare the value of interest to each value in the set.
@@ -142,21 +148,23 @@ the remaining candidates. Comparing the value in the middle of the subarray
 we are focused on with our value of interest, we can
 either stop if we have successfully found our target
 or focus on the left or the right half of the subarray depending on whether
-our target is smaller of larger than the value we just read.
+our target is smaller or larger than the value we just read.
 
-Let us look at a couple of examples.
+Let us look at a couple of executions of this search algorithm on a set
+represented as a sorted array.
 
 \subsection{Search, by example}
 \label{example:search}
 
 In figure~\ref{fig:searchsuccess} we are looking for
-the value 11 in a sorted array.
+the value 11 in a sorted array which happens to contain the first
+ten prime numbers.
 %
 We start by reading the value in the middle of the whole array, find out it is
 13 which is larger than 11 and thus focus on the left half of the array for the
 next step.
 %
-We then read the value in the middle of the left half of the array, obtain 5
+We then read the value in the middle of this left half, obtain 5
 which is smaller than 11 and thus shift our focus to the right of 5, that is
 to say on the second quarter of the whole array.
 %
@@ -186,16 +194,23 @@ the array and can declare that 31 is not a member of the set.
 
 \subsection{Search, imperatively}
 
+
 \input{algo}
 
 \subsection{The computation's underlying structure}
 
+This listing gives us a formal definition of the algorithm. It should be
+enough to prove it terminating and correct. However it has not shone any
+light on the structure of the computation.
 
-Coming back to our running example, if we take the time to trace all the possible
-execution paths of binary search on our read only array we see a tree revealed
-(cf. \cref{fig:searchall}).
-This is the underlying structure of the binary search computation: a binary search
-tree! \todo{Be precise: AVL?}
+Coming back to our running example, if we take the time to trace all the
+possible execution paths of binary search on our read only array we see a
+tree revealed (cf. \cref{fig:searchall}).
+%
+This is the underlying structure of the binary search computation: a binary
+search tree! Additionally, because the procedure is guaranteed to half the
+number of candidates at each step, we know that this binary search tree is
+balanced.\todo{Be precise: AVL?}
 
 \begin{figure}[h]
   \center
