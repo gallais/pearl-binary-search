@@ -262,20 +262,24 @@ we are going to introduce now.
 In their work on extensible
 effects~\parenciteyear{DBLP:conf/haskell/KiselyovI15}
 Kiselyov and Ishii use an open union type to efficiently represent the
-available choice of effects in a given computation.
+sum of all of the effects available in a given computation.
 
 Internally this open union type is a Generalised Algebraic Data Type
 (GADT\todo{cite something?}) parameterised by a list $ts$ of the types
 in the union.
 %
-This GADT has exactly one constructor that stores an \texttt{Int} --meant to be
-understood as the index of the type of interest in $ts$-- together with a value
-of an arbitrary type.
+This GADT has exactly one constructor that stores
+%
+a tag (an \texttt{Int} meant to be understood as the index of the type
+of interest in $ts$)
+%
+together with a value of an arbitrary type.
 %
 A simplified\footnote{
-  Unlike Kiselyov   and Ishii's original Haskell code, this version of
+  Unlike Kiselyov and Ishii's original Haskell code, this version of
   \texttt{Union} is specialised to types rather than type constructors,
-  and we have stripped annotations concerned with strictness or memory layout.
+  and we have stripped annotations concerned with strictness or memory
+  layout.
   }
 version of the definition is visible in figure \ref{fig:openunion}.
 
@@ -288,27 +292,69 @@ version of the definition is visible in figure \ref{fig:openunion}.
 \label{fig:openunion}
 \end{figure}
 
-
-The \texttt{Union} constructor is not exported so that users may only
-manipulate elements of the open union type via the provided functions.
+The \texttt{Union} data constructor is not exported so that users may only
+craft and manipulate elements of the open union type via the functions
+provided by the library authors.
 %
-A library-wide invariant relying on strong assumptions about the host language
-(namely global uniqueness of typeclass instances) guarantees that users of the
-library will only ever be able to manufacture elements of the union where the
-type of the value stored is equal to that pointed at by the \texttt{Int} index.
+A library-wide invariant relying on strong assumptions about the host
+language (namely global uniqueness of typeclass instances) informally
+guarantees that users of the library will only ever be in possession
+of elements of the union where the type of the value stored is equal
+to that pointed at by the \texttt{Int} index.
 %
 This justifies their widespread use of unsafe coercions when unpacking values of
 the union type.
 
 In Idris2 however we can take advantage of dependent types to implement a safe
-version of \texttt{Union} where the invariant between the stored \texttt{Int},
-the type of the value, and the list of types given as a parameter is explicit.
+version of \texttt{Union} where the invariant between
+the stored tag,
+the type of the value,
+and the list of types given as a parameter
+is made explicit.
 Additionally, we can take advantage of quantitative type theory to ensure that
 this invariant will be runtime irrelevant thus obtaining a safe, proven correct
 \emph{and} just as efficient version of the library.
 
+The key element in this safe implementation is the definition of a three place
+relation connecting
+a value of a given type,
+a list of values of that same type,
+and a natural number
+formalising the idea that the natural number is the position at which the value
+is present in the list.
+%
+We call this three-place relation \texttt{AtIndex} and give its definition in
+figure~\ref{fig:atindexrel}.
 
-% Their library provides this open union type as an Abstract Data Type
+\begin{figure}[h]
+\begin{minted}{Idris}
+  data AtIndex : ty -> List ty -> Nat -> Type where
+    Z :                   AtIndex a (a :: as) Z
+    S : AtIndex a as n -> AtIndex a (b :: as) (S n)
+\end{minted}
+\caption{\texttt{AtIndex t ts n} specifies that \texttt{t}
+  is in position \texttt{n} in \texttt{ts}}
+\label{fig:atindexrel}
+\end{figure}
+
+The constructor \texttt{Z} builds a proof that the natural number \texttt{Z}
+points at the head of the list by ensuring that the value of interest
+is equal to it. This is expressed in Idris2 by using the same variable
+\texttt{a} for both.
+%
+while the constructor \texttt{S} builds a proof that a successor-headed
+natural number points at a value in a cons-headed list provided that the
+predecessor of the number points to it in the list's tail.
+
+\paragraph{Remark}
+Readers may be concerned by our use of unary natural numbers.
+Idris2 optimises natural numbers to efficient GMP-style arbitrary precision
+integers so our tag will not in fact be a unary number at runtime.
+This is still slightly less compact than a mere \texttt{Int}.
+To save this little bit of extra memory would require a more complex
+encoding enforcing that the index is always bounded. This is outside the
+scope of this paper.
+
 
 
 \section{A Tree in Disguise}
