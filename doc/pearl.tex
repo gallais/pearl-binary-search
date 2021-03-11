@@ -95,7 +95,10 @@ that problem. The careful typing rules ensure the user-written programs manipula
 inductive data can be run directly on its serialised form.
 %
 In it, \citet{DBLP:conf/pldi/VollmerKRS0N19} warn against the explicit manipulation
-of pointers. This justifies their approach: adding built-in compiler support.
+of pointers (what they call Cursor is essentially a type-informed offset of
+a pointer)\todo{double check}.
+%
+This justifies their approach: adding built-in compiler support.
 
 \begin{quote}
   Cursors need to be manipulated carefully to visit the necessary portions
@@ -129,8 +132,11 @@ provides.
 
 \paragraph{Section \ref{sec:treearray}} is the core of our pearl: the
 runtime irrelevant inductive structure that allows us to see a read-only array
-as a tree in disguise. All of the information it carries allows us to prove a
-logarithmic \emph{decidability} principle for array membership.
+as a tree in disguise.
+%
+All of the invariant-enforcing information the runtime irrelevant structure
+carries allows us to prove a logarithmic \emph{decidability} principle for
+array membership.
 
 
 \section{Search by dichotomy}
@@ -305,14 +311,15 @@ to that pointed at by the \texttt{Int} index.
 This justifies their widespread use of unsafe coercions when unpacking values of
 the union type.
 
-In Idris2 however we can take advantage of dependent types to implement a safe
-version of \texttt{Union} where the invariant between
+In Idris2 however we can take advantage of \emph{dependent} types to
+implement a safe version of \texttt{Union} where the invariant between
 the stored tag,
 the type of the value,
 and the list of types given as a parameter
 is made explicit.
-Additionally, we can take advantage of quantitative type theory to ensure that
-this invariant will be runtime irrelevant thus obtaining a safe, proven correct
+Additionally, we can take advantage of \emph{quantitative} types
+to ensure that this invariant will be runtime irrelevant
+thus obtaining a safe, proven correct
 \emph{and} just as efficient version of the library.
 
 The key element in this safe implementation is the definition of a three place
@@ -340,9 +347,9 @@ figure~\ref{fig:atindexrel}.
 The constructor \texttt{Z} builds a proof that the natural number \texttt{Z}
 points at the head of the list by ensuring that the value of interest
 is equal to it. This is expressed in Idris2 by using the same variable
-\texttt{a} for both.
+\texttt{a} for both the value and the head.
 %
-while the constructor \texttt{S} builds a proof that a successor-headed
+The constructor \texttt{S} builds a proof that a successor-headed
 natural number points at a value in a cons-headed list provided that the
 predecessor of the number points to it in the list's tail.
 
@@ -356,6 +363,15 @@ encoding enforcing that the index is always bounded. This is outside the
 scope of this paper.
 
 
+\begin{figure}[h]
+\begin{minted}{Idris}
+  data Union : (ts : List Type) -> Type where
+    MkUnion : (k : Nat) -> (0 _ : AtIndex t ts k) -> t -> Union ts
+\end{minted}
+\caption{A safe version of \texttt{Union}}
+\label{fig:safeopenunion}
+\end{figure}
+
 
 \section{A Tree in Disguise}
 \label{sec:treearray}
@@ -368,6 +384,7 @@ scope of this paper.
 
 \todo{Check Bedrock}
 \todo{Check ghosts of departed proofs}
+\todo{Check liquid Haskell}
 
 \bibliography{pearl}
 
