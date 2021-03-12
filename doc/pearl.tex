@@ -362,6 +362,13 @@ To save this little bit of extra memory would require a more complex
 encoding enforcing that the index is always bounded. This is outside the
 scope of this paper.
 
+We can use this relation to define a safe version of \texttt{Union} explicitly
+enforcing the invariant between the \texttt{Nat} tag, the type of the value
+stored and the list of types used as a parameter. This definition is presented
+in figure~\ref{fig:safeopenunion}. The \texttt{AtIndex} argument is marked with
+a \texttt{0} meaning that it is runtime irrelevant. Idris2 will ensure that we
+never rely on this argument for runtime relevant information and it will
+automatically erase it at compilation time.
 
 \begin{figure}[h]
 \begin{minted}{Idris}
@@ -372,6 +379,21 @@ scope of this paper.
 \label{fig:safeopenunion}
 \end{figure}
 
+We can write a library similar to Kiselyov and Ishii's except that internally we
+never have to use an unsafe coercion: our values are statically known to have
+the correct type thanks to the proofs that are attached to them.
+%
+We still rely on typeclass resolution to automatically check that a type
+belongs to a union.
+%
+But we do not need to assume global uniqueness because our typeclasses are
+producing evidence of their claims and thus can be trusted even if they have
+been added by someone other than the library writers.
+
+This short example will hopefully have convinced the reader that Quantitative
+Type Theory can be a convenient way to remove unsafe code fragments
+in favour of equivalent but safe replacements that make some structural
+invariants explicit.
 
 \section{A Tree in Disguise}
 \label{sec:treearray}
