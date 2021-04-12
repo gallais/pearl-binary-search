@@ -265,8 +265,8 @@ we are going to introduce now.
 
 \subsection{Example: a Safe Open Union Type}
 
-In their work on extensible
-effects~\parenciteyear{DBLP:conf/haskell/KiselyovI15}
+In their work on extensible effects
+in Haskell~\parenciteyear{DBLP:conf/haskell/KiselyovI15}
 Kiselyov and Ishii use an open union type to efficiently represent the
 sum of all of the effects available in a given computation.
 
@@ -294,7 +294,7 @@ version of the definition is visible in figure \ref{fig:openunion}.
   data Union (ts :: [*]) where
     Union :: Int -> t -> Union ts
 \end{minted}
-\caption{A Simplified Definition of \texttt{Union}}
+\caption{A Simplified Definition of \texttt{Union} in Haskell}
 \label{fig:openunion}
 \end{figure}
 
@@ -306,7 +306,7 @@ A library-wide invariant relying on strong assumptions about the host
 language (namely global uniqueness of typeclass instances) informally
 guarantees that users of the library will only ever be in possession
 of elements of the union where the type of the value stored is equal
-to that pointed at by the \texttt{Int} index.
+to that pointed at by the \texttt{Int} tag.
 %
 This justifies their widespread use of unsafe coercions when unpacking values of
 the union type.
@@ -353,6 +353,15 @@ The constructor \texttt{S} builds a proof that a successor-headed
 natural number points at a value in a cons-headed list provided that the
 predecessor of the number points to it in the list's tail.
 
+\begin{figure}[h]
+\begin{minted}{Idris}
+natIndex : AtIndex Nat [Int, Double, Nat, List ()] 2
+natIndex = S (S Z)
+\end{minted}
+\caption{\texttt{Nat} is at index 2 in the given list}
+\label{fig:atindexexample}
+\end{figure}
+
 \paragraph{Remark}
 Readers may be concerned by our use of unary natural numbers.
 Idris2 optimises natural numbers to efficient GMP-style arbitrary precision
@@ -379,6 +388,16 @@ automatically erase it at compilation time.
 \label{fig:safeopenunion}
 \end{figure}
 
+
+\begin{figure}[h]
+\begin{minted}{Idris}
+natInjection : Nat -> Union [Int, Double, Nat, List ()]
+natInjection = MkUnion 2 natIndex
+\end{minted}
+\caption{Using \texttt{natIndex} to inject a \texttt{Nat} in the given \texttt{Union}}
+\label{fig:unionexexample}
+\end{figure}
+
 We can write a library similar to Kiselyov and Ishii's except that internally we
 never have to use an unsafe coercion: our values are statically known to have
 the correct type thanks to the proofs that are attached to them.
@@ -394,6 +413,15 @@ This short example will hopefully have convinced the reader that Quantitative
 Type Theory can be a convenient way to remove unsafe code fragments
 in favour of equivalent but safe replacements that make some structural
 invariants explicit.
+
+This refactoring also opens the door to giving more power to users:
+%
+when the invariants are informal users have to be treated in
+an adversarial manner, assuming they may break it at any time
+%
+but when the invariants are made explicit, users can be given free reign
+to access the library's internals as they will have to prove their modifications
+correct.
 
 \section{A Tree in Disguise}
 \label{sec:treearray}
