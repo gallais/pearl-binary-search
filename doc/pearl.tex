@@ -204,18 +204,66 @@ the array and can declare that 31 is not a member of the set.
   \label{fig:searchfail}
 \end{figure}
 
+Now that we have refreshed our memory and have hopefully convinced ourselves
+that this is indeed a correct algorithm, let us look at its formal definition.
+
 \subsection{Search, imperatively}
 
+The procedure relies on three local variables.
+%
+The first one (\textit{found}) is a boolean that corresponds to whether we
+have found our needle yet.
+%
+The two others (\textit{begin} and \textit{end} respectively) are integers
+tracking the boundaries of the subarray of interest. They are initialised to
+zeroa and the array's size respectively.
+%
+Throughout the search it should always be the case that all of the integers
+between \textit{begin} (inclusive) and \textit{end} (exclusive) are valid
+indices of our input array.
+
+The core of the procedure is expressed as a \texttt{while} loop: as long
+as we have not yet found our candidate, and the subarray in focus is valid
+(i.e. \textit{begin} is strictly smaller than \textit{end}) then we look
+at the value in the middle of the subarray and compare it to our
+\textit{needle}.
+
+If it is equal, we set \textit{found} to true and will promptly exit and
+report this good news.
+%
+If it smaller then we focus on the left half of the subarray i.e. we keep
+the beginning the same but use \textit{middle} as our new endpoint.
+%
+Otherwise it is larger and we focus on the right half of the subarray i.e.
+we keep the end the same but shift the beginning to the index immediately
+to the right of the \textit{middle}.
 
 \input{algo}
 
+This listing gives us a formal definition of the algorithm. It should be
+enough to prove it solves the set membership decision problem under the
+assumption that the xinput array is sorted.
+
+During such a proof we need to ensure that
+
+the algorithm terminates by proving that the size of the subarray in focus
+($\mathit{end} - \mathit{begin}$) is a strictly decreasing natural number
+
+all of our array reads are valid i.e. that \textit{middle} is always a valid
+index (in particular its computation never overflows)
+
+the end value of \textit{found} is the correct answer to the decision problem
+(this relies on the assumption that the array is sorted).
+
+
+We ought to be able to use a specification language for imperative algorithms
+and interactive or automated provers \todo{cite Dafny, Why, etc?} to check
+our reasoning.
+
 \subsection{The computation's underlying structure}
 
-This listing gives us a formal definition of the algorithm. It should be
-enough to prove it terminating and correct under the assumption that the
-input array is sorted.
-%
-However it has not shone any light on the structure of the computation.
+Despite now having a formal definition of the algorithm,
+we have not shone any light on the structure of the computation.
 If a list of values is the essence of a \texttt{for} loop,
 what is that of a search by dichotomy?
 %
