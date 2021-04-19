@@ -21,8 +21,8 @@ record Array (a : Type) where
   buffer : Buffer
 
 ||| A sub-array is delimited by two bounds
-||| @begin for the beginning (0 for the full array)
-||| @end   for the end       (size arr for the full array)
+||| @begin (inclusive) for the beginning (0 for the full array)
+||| @end   (exclusive) for the end       (size arr for the full array)
 ||| It is non empty if and only if `LT begin end`
 public export
 record SubArray {a : Type} (arr : Array a) where

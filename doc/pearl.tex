@@ -216,14 +216,14 @@ have found our needle yet.
 %
 The two others (\textit{begin} and \textit{end} respectively) are integers
 tracking the boundaries of the subarray of interest. They are initialised to
-zeroa and the array's size respectively.
+zero and the array's size respectively.
 %
 Throughout the search it should always be the case that all of the integers
 between \textit{begin} (inclusive) and \textit{end} (exclusive) are valid
 indices of our input array.
 
 The core of the procedure is expressed as a \texttt{while} loop: as long
-as we have not yet found our candidate, and the subarray in focus is valid
+as we have not yet found our candidate, and the subarray in focus is non-empty
 (i.e. \textit{begin} is strictly smaller than \textit{end}) then we look
 at the value in the middle of the subarray and compare it to our
 \textit{needle}.
@@ -242,19 +242,20 @@ to the right of the \textit{middle}.
 
 This listing gives us a formal definition of the algorithm. It should be
 enough to prove it solves the set membership decision problem under the
-assumption that the xinput array is sorted.
-
+assumption that the input array is sorted.
+%
 During such a proof we need to ensure that
 
-the algorithm terminates by proving that the size of the subarray in focus
+\begin{enumerate}
+\item the algorithm terminates by proving that the size of the subarray in focus
 ($\mathit{end} - \mathit{begin}$) is a strictly decreasing natural number
 
-all of our array reads are valid i.e. that \textit{middle} is always a valid
-index (in particular its computation never overflows)
+\item all of our array reads are valid i.e. that \textit{middle} is always a
+  valid index (in particular its computation never overflows)
 
-the end value of \textit{found} is the correct answer to the decision problem
-(this relies on the assumption that the array is sorted).
-
+\item the end value of \textit{found} is the correct answer to the decision
+  problem (this relies on the assumption that the array is sorted).
+\end{enumerate}
 
 We ought to be able to use a specification language for imperative algorithms
 and interactive or automated provers \todo{cite Dafny, Why, etc?} to check
@@ -268,7 +269,8 @@ If a list of values is the essence of a \texttt{for} loop,
 what is that of a search by dichotomy?
 %
 This can be answered by going back to our running example and taking the
-time to observe the behaviour of binary search tree.
+time to observe all possible behaviours of binary search on our array of
+prime numbers.
 
 In figure \ref{fig:searchall} we trace all of the possible execution paths
 and see a tree revealed.
@@ -287,13 +289,16 @@ balanced.\todo{Be precise: AVL?}
 
 This suggests a straightforward avenue for implementation in a functional
 language or formalisation in a proof assistant: ditch the array and use the
-underlying binary search tree instead!
+underlying binary search tree instead.
 %
 This has the added benefit of replacing an unwieldy induction over the size
 of the subarray in focus in favour of a purely structural one on the tree.
 
 Additionally, in a dependently typed language we can annotate the tree with
-invariants thus guaranteeing that the values are indeed sorted. This empowers
+invariants thus guaranteeing that the values are indeed
+sorted~\citep{DBLP:conf/icfp/McBride14}.
+%
+This empowers
 us to not only write a search procedure but also prove that it decides the
 set membership problem.
 
@@ -401,6 +406,10 @@ The constructor \texttt{S} builds a proof that a successor-headed
 natural number points at a value in a cons-headed list provided that the
 predecessor of the number points to it in the list's tail.
 
+We include below in~\cref{fig:atindexexample} a proof that the third
+element of the list being considered
+(i.e. the one whose index is $2$) is the type of natural number.
+
 \begin{figure}[h]
 \begin{minted}{Idris}
 natIndex : AtIndex Nat [Int, Double, Nat, List ()] 2
@@ -436,6 +445,10 @@ automatically erase it at compilation time.
 \label{fig:safeopenunion}
 \end{figure}
 
+We can reuse the proof we gave in the \texttt{AtIndex} example
+in~\cref{fig:atindexexample} to produce an injection function
+taking a natural number and returning a member of the union of
+\texttt{Int}, \texttt{Double}, \texttt{Nat}, and \texttt{List Unit}.
 
 \begin{figure}[h]
 \begin{minted}{Idris}
@@ -454,8 +467,8 @@ We still rely on typeclass resolution to automatically check that a type
 belongs to a union.
 %
 But we do not need to assume global uniqueness because our typeclasses are
-producing evidence of their claims and thus can be trusted even if they have
-been added by someone other than the library writers.
+producing evidence of their claims and thus their instances can be trusted
+even if they have been added by someone other than the library writers.
 
 This short example will hopefully have convinced the reader that Quantitative
 Type Theory can be a convenient way to remove unsafe code fragments
@@ -465,7 +478,7 @@ invariants explicit.
 This refactoring also opens the door to giving more power to users:
 %
 when the invariants are informal users have to be treated in
-an adversarial manner, assuming they may break it at any time
+an adversarial manner, assuming they may break crucial assumptions at any time
 %
 but when the invariants are made explicit, users can be given free reign
 to access the library's internals as they will have to prove their modifications
@@ -474,11 +487,55 @@ correct.
 \section{A Tree in Disguise}
 \label{sec:treearray}
 
+In this section we are going to build on our observation that we can combine
+a value with an efficient runtime representation
+together with a runtime irrelevant view that enforces crucial invariants
+to obtain a correct by construction and efficient library.
+\todo{cite ``view''}
+
+As we have noticed earlier, a set represented as a sorted array is a balanced
+binary search tree in disguise. We can make this formal by defining a tree
+indexed over an array just like \texttt{AtIndex} was a membership proof indexed
+over a natural number.
+
+
+\subsection{Interfacing with unsafe code}
+
+
+\begin{figure}[h]
+  \begin{minted}{Idris}
+    data ValueAt : Array -> Int -> Char -> Type where
+      MkValueAt : ValueAt arr i v
+  \end{minted}
+  \caption{Specifying a value at a given index}
+\end{figure}
+
+
+The array is read only so it should be safe to assume that it is not possible
+to get two \texttt{ValueAt} proofs relating the same index to different values.
+The only way for us to build such a proof is to use an unsafe primitive
+\texttt{believe\_me} to coerce an equality proof.
+
+
+\begin{figure}[h]
+  \begin{minted}{Idris}
+    uniqueValueAt : ValueAt arr i v -> ValueAt arr i w -> v === w
+    uniqueValueAt = believe_me (the (v === v) Refl)
+  \end{minted}
+  \caption{Assuming that said values are unique}
+\end{figure}
 
 
 \section{Related work}
 
 \paragraph{LoCal}
+
+% \paragraph{Ornaments} \texttt{AtIndex} is the algebraic ornament of a
+% membership proof by the position in the list it implicitly describes.
+% \todo{cite algebraic ornament}
+% %% Is this relevant? Conversely Nat is the erasure of a membership proof
+% %% once the forced indices have been dropped.
+
 
 \todo{Check Bedrock}
 \todo{Check ghosts of departed proofs}
