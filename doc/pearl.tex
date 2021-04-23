@@ -25,8 +25,12 @@
 % parens around citeyear
 \newcommand{\parenciteyear}[1]{(\citeyear{#1})}
 
-
 \usepackage{cleveref}
+
+% unumbered remarks
+\usepackage{amsthm}
+\newtheorem*{remark}{Remark}
+
 
 \title{Certified Binary Search in a Read-Only Array}
 \author{Guillaume ALLAIS}
@@ -419,7 +423,7 @@ natIndex = S (S Z)
 \label{fig:atindexexample}
 \end{figure}
 
-\paragraph{Remark}
+\begin{remark}[Efficiency and Unary Naturals]
 Readers may be concerned by our use of unary natural numbers.
 Idris2 optimises natural numbers to efficient GMP-style arbitrary precision
 integers so our tag will not in fact be a unary number at runtime.
@@ -427,6 +431,7 @@ This is still slightly less compact than a mere \texttt{Int}.
 To save this little bit of extra memory would require a more complex
 encoding enforcing that the index is always bounded. This is outside the
 scope of this paper.
+\end{remark}
 
 We can use this relation to define a safe version of \texttt{Union} explicitly
 enforcing the invariant between the \texttt{Nat} tag, the type of the value
@@ -495,27 +500,67 @@ to obtain a correct by construction and efficient library.
 
 As we have noticed earlier, a set represented as a sorted array is a balanced
 binary search tree in disguise. We can make this formal by defining a tree
-indexed over an array just like \texttt{AtIndex} was a membership proof indexed
-over a natural number.
+indexed over an array similarly to how \texttt{AtIndex} was a membership
+proof indexed over a natural number.
 
+In this instance however we are not dealing
+with a pure value anymore: reading from the array is an effectful operation that
+comes with very few guarantees from the type system's point of view.
+To be able to prove anything at all we are going to need to make our
+assumptions explicit, using unsafe primitives to provide a richly typed
+interface to low level operations.
 
 \subsection{Interfacing with unsafe code}
 
+Our first object of interest is the array that we are going to use as the
+runtime representation of our set. We decide that our set will be immutable
+and correspondingly pick a read-only array as its runtime representation.
+
+In order to connect the values contained in the nodes of our binary search tree
+to those stored in the array, we introduce the \texttt{ValueAt} relation
+defined in \cref{fig:valueat}.
+A value of type \texttt{ValueAt arr i v} is to be understood as a proof that
+if we were to read the value at index \texttt{i} in the array \texttt{arr} we
+would get \texttt{v}.
 
 \begin{figure}[h]
   \begin{minted}{Idris}
-    data ValueAt : Array -> Int -> Char -> Type where
+    data ValueAt : Array a -> Int -> a -> Type where
       MkValueAt : ValueAt arr i v
   \end{minted}
   \caption{Specifying a value at a given index}
+  \label{fig:valueat}
 \end{figure}
+
+This definition may look surprising: it seems that, using the constructor
+\texttt{MkValueAt}, users could manufacture arbitrary proofs. In practice we
+do not export the constructor and the only way for users to obtain proofs of
+\texttt{ValueAt} will be via the (trusted) initialisation function we provide
+as part of our library for read only arrays.
+
+\begin{figure}[h]
+  \begin{minted}{Idris}
+    initialise : (size : PosInt) ->
+                 (f : (i : Int) -> InRange size i -> a) ->
+                 IO (Subset (Array a) (IsTabulationOf f))
+  \end{minted}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{minted}{Idris}
+    IsTabulationOf : ((i : Int) -> InRange size i -> a) ->
+                     Array a -> Type
+    IsTabulationOf f arr = (i : Int) -> (prf : InRange size i) ->
+                           ValueAt arr i (f i prf))
+  \end{minted}
+\end{figure}
+
 
 
 The array is read only so it should be safe to assume that it is not possible
 to get two \texttt{ValueAt} proofs relating the same index to different values.
 The only way for us to build such a proof is to use an unsafe primitive
 \texttt{believe\_me} to coerce an equality proof.
-
 
 \begin{figure}[h]
   \begin{minted}{Idris}

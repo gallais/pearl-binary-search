@@ -1,8 +1,15 @@
 module Data.Int.Order
 
+import Data.Bits
 import Data.Order
+import Data.DPair
 
 %default total
+
+%hide Nat.LT
+%hide Nat.LTE
+%hide Nat.GT
+
 
 ------------------------------------------------------------------------
 -- Prelude
@@ -305,7 +312,7 @@ OpenInterval = Interval False False
 ||| Provided that `LTE a b`, the computation of middle should not overflow
 public export
 middle : (a, b : Int) -> Int
-middle a b = a + ((b - a) `shiftR` 1)
+middle a b = a + ((b - a) `shiftR` fromNat 1)
 
 ||| Provided that `LT a b`, we can guarantee that `middle a b` is in [|a,b[|.
 export
@@ -317,5 +324,5 @@ middleInInterval p = strictLT p $ MkInterval unsafeLTE (MkLT unsafeRefl)
     ||| DO NOT re-export!
     unsafeLTE : LTE a (middle a b)
     unsafeLTE with (LTE.decide a (middle a b))
-    unsafeLTE | Yes p = p
-    unsafeLTE | No np = assert_total $ idris_crash "Error: invalid call to unsafeLTE"
+      unsafeLTE | Yes p = p
+      unsafeLTE | No np = assert_total $ idris_crash "Error: invalid call to unsafeLTE"

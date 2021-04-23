@@ -1,0 +1,48 @@
+package binary-search
+-- version =
+authors = "Guillaume ALLAIS <guillaume.allais@ens-lyon.org>"
+-- maintainers =
+-- license =
+-- brief =
+-- readme =
+-- homepage =
+-- sourceloc =
+-- bugtracker =
+
+-- packages to add to search path
+depends = contrib
+
+-- modules to install
+modules = BT.Safe,
+          Data.Array.ReadOnly,
+          Data.Int.Order,
+          Data.Order,
+          Data.Order.Extended
+
+-- main file (i.e. file to load at REPL)
+-- main =
+
+-- name of executable
+-- executable =
+-- opts =
+-- sourcedir =
+-- builddir =
+-- outputdir =
+
+-- script to run before building
+-- prebuild =
+
+-- script to run after building
+-- postbuild =
+
+-- script to run after building, before installing
+-- preinstall =
+
+-- script to run after installing
+-- postinstall =
+
+-- script to run before cleaning
+-- preclean =
+
+-- script to run after cleaning
+-- postclean =

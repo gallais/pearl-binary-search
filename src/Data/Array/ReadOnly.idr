@@ -6,6 +6,16 @@ import Data.Int.Order
 
 %default total
 
+public export
+PosInt : Type
+PosInt = Subset Int (LTE 0)
+
+namespace PosInt
+
+  public export
+  InRange : PosInt -> Int -> Type
+  InRange size = Interval True False 0 (fst size)
+
 ------------------------------------------------------------------------
 -- Arrays
 
@@ -17,7 +27,7 @@ import Data.Int.Order
 export
 record Array (a : Type) where
   constructor MkArray
-  size   : Subset Int (LTE 0)
+  size   : PosInt
   buffer : Buffer
 
 ||| A sub-array is delimited by two bounds
@@ -111,11 +121,15 @@ interface Storable a where
   unsafeGetValueAt   : HasIO io => Buffer -> Int -> io a
   unsafeCreateBuffer : HasIO io => (size : Int) -> (Int -> a) -> io Buffer
 
+public export
+IsTabulationOf : (f : (i : Int) -> InRange size i -> a) -> Array a -> Type
+IsTabulationOf f arr = (i : Int) -> (prf : InRange size i) -> ValueAt arr i (f i prf))
+
 export
 initialise : (HasIO io, Storable a) =>
-             (size : Subset Int (LTE 0)) ->
-             (f : (i : Int) -> Interval True False 0 (fst size) i -> a) ->
-             io (Subset (Array a) $ \ arr => (i : Int) -> (prf : _) -> ValueAt arr i (f i prf))
+             (size : PosInt) ->
+             (f : (i : Int) -> InRange size i -> a) ->
+             io (Subset (Array a) (IsTabulationOf f))
 initialise s@(Element size _) f
   = do buffer <- unsafeCreateBuffer size f'
        pure $ Element (MkArray s buffer) (\ _,_ => MkValueAt)
