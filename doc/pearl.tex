@@ -587,6 +587,28 @@ The only way for us to build such a proof is to use an unsafe primitive
 \todo{Check liquid Haskell}
 \todo{Discuss Monnier's work}
 
+\paragraph{Dafny}
+
+In their work, Morshtein, Ettinger, and
+Tyszberowicz~\parenciteyear{Morshtein:MScThesis:2020,workshop/fide/Morshtein21}
+present a formalisation of the imperative presentation of binary search in
+Dafny, a language where pre- and post-conditions as well as loop invariants can
+be made explicit and automatically checked using Z3.
+%
+They do not have to worry about overflows as Dafny uses arrays indexed by
+arbitrary precision integers.
+%
+On top of proving functional correctness, they give a worst time complexity
+analysis by giving an upper bound on the value of a \emph{ghost} variable
+(a compile-time only variable) that is incremented at each iteration of the
+main \texttt{while} loop. They highlight the fact that the recursive definition
+of \textit{log} and the iterative definition of the loop makes connecting the
+two hard for both Dafny and the programmer.
+%
+Similar guarantees could be added to our library by using
+Danielsson's lightweight semiformal framework for time complexity
+analysis~\citep{DBLP:conf/popl/Danielsson08}.
+
 \bibliography{pearl}
 
 \end{document}
